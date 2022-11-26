@@ -2,9 +2,11 @@ package dicecalculator
 
 import (
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/justinian/dice"
 )
 
 func MainInterfaceHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -27,15 +29,38 @@ func MainInterfaceHandler(s *discordgo.Session, i *discordgo.InteractionCreate) 
 	} else if i.Interaction.Type == discordgo.InteractionMessageComponent {
 		log.Println("Received interaction event", i.Interaction)
 		if strings.HasPrefix(i.MessageComponentData().CustomID, "roll-") {
+			formula := i.Message.Content
+			if i.Message.Content != "" {
+				formula += "+"
+			}
+			formula += "1" + strings.TrimPrefix(i.MessageComponentData().CustomID, "roll-")
 			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseUpdateMessage,
 				Data: &discordgo.InteractionResponseData{
-					Content: i.Message.Content + "+" + strings.TrimPrefix(i.MessageComponentData().CustomID, "roll-"),
+					Content: formula,
 				},
 			})
 			if err != nil {
 				log.Println("ERROR: ", err)
 			}
+		} else if i.MessageComponentData().CustomID == "roll" {
+			log.Println("Rolling ", i.Message.Content)
+			rollResult, _, err := dice.Roll(i.Message.Content)
+			var response string
+			if err != nil {
+				log.Println("ERROR: ", err)
+				response = "Invalid query (" + err.Error() + ")"
+			} else {
+				log.Println("INFO: ", rollResult)
+				response = strconv.Itoa(rollResult.Int()) + " (" + rollResult.Description() + ")"
+			}
+			// todo: also delete original ephemeral message
+			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: "Result: " + response,
+				},
+			})
 		}
 	} else {
 		log.Println("Received unhandled interaction event", i.Interaction)
@@ -91,6 +116,15 @@ func components() []discordgo.MessageComponent {
 				discordgo.Button{
 					Label:    "d20",
 					CustomID: "roll-d20",
+					Style:    discordgo.SuccessButton,
+				},
+			},
+		},
+		discordgo.ActionsRow{
+			Components: []discordgo.MessageComponent{
+				discordgo.Button{
+					Label:    "Roll!",
+					CustomID: "roll",
 					Style:    discordgo.SuccessButton,
 				},
 			},
