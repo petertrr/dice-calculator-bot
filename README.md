@@ -1,1 +1,1 @@
-Run: `go install . && ~/go/bin/dice-calc-bot -t <token>`
+Run: `make build && ./bin/dice-calc-bot -t <token>`
