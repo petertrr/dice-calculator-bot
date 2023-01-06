@@ -9,6 +9,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	dicecalculator "github.com/petertrr/dice-calc-bot/dice-calculator"
+	"github.com/petertrr/dice-calc-bot/parser"
 )
 
 var (
@@ -39,7 +40,10 @@ func main() {
 		return
 	}
 
-	discord.AddHandler(dicecalculator.MainInterfaceHandler)
+	roller := parser.Antrl4BasedRoller{}
+	discord.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		dicecalculator.MainInterfaceHandler(roller, s, i)
+	})
 
 	// Open a websocket connection to Discord and begin listening.
 	err = discord.Open()

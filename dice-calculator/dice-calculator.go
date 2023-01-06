@@ -2,14 +2,20 @@ package dicecalculator
 
 import (
 	"log"
-	"strconv"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/justinian/dice"
+	"github.com/petertrr/dice-calc-bot/parser"
 )
 
-func MainInterfaceHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+/**
+ * @param roller fixme: no public interface for roller is exported from `dice`
+ */
+func MainInterfaceHandler(
+	roller parser.Antrl4BasedRoller,
+	s *discordgo.Session,
+	i *discordgo.InteractionCreate,
+) {
 	if i.Interaction.Type == discordgo.InteractionApplicationCommand {
 		log.Println("Received interaction event", i.Interaction)
 		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
@@ -17,10 +23,7 @@ func MainInterfaceHandler(s *discordgo.Session, i *discordgo.InteractionCreate) 
 			Data: &discordgo.InteractionResponseData{
 				Content:    "",
 				Flags:      discordgo.MessageFlagsEphemeral,
-				Components: components(),
-				// discordgo.TextInput{
-				// Label: "Text",
-				// },
+				Components: Components(),
 			},
 		})
 		if err != nil {
@@ -45,14 +48,14 @@ func MainInterfaceHandler(s *discordgo.Session, i *discordgo.InteractionCreate) 
 			}
 		} else if i.MessageComponentData().CustomID == "roll" {
 			log.Println("Rolling ", i.Message.Content)
-			rollResult, _, err := dice.Roll(i.Message.Content)
+			rollResult, _, err := roller.Roll(i.Message.Content)
 			var response string
 			if err != nil {
 				log.Println("ERROR: ", err)
 				response = "Invalid query (" + err.Error() + ")"
 			} else {
 				log.Println("INFO: ", rollResult)
-				response = strconv.Itoa(rollResult.Int()) + " (" + rollResult.Description() + ")"
+				response = rollResult.String()
 			}
 			// todo: also delete original ephemeral message
 			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
@@ -64,70 +67,5 @@ func MainInterfaceHandler(s *discordgo.Session, i *discordgo.InteractionCreate) 
 		}
 	} else {
 		log.Println("Received unhandled interaction event", i.Interaction)
-	}
-}
-
-func components() []discordgo.MessageComponent {
-	return []discordgo.MessageComponent{
-		discordgo.ActionsRow{
-			Components: []discordgo.MessageComponent{
-				discordgo.Button{
-					Label:    "Take a look inside",
-					Style:    discordgo.LinkButton,
-					Disabled: false,
-					URL:      "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-					Emoji: discordgo.ComponentEmoji{
-						Name: "🤷",
-					},
-				},
-			},
-		},
-		discordgo.ActionsRow{
-			Components: []discordgo.MessageComponent{
-				discordgo.Button{
-					Label:    "d4",
-					CustomID: "roll-d4",
-					Style:    discordgo.SuccessButton,
-				},
-				discordgo.Button{
-					Label:    "d6",
-					CustomID: "roll-d6",
-					Style:    discordgo.SuccessButton,
-				},
-				discordgo.Button{
-					Label:    "d8",
-					CustomID: "roll-d8",
-					Style:    discordgo.SuccessButton,
-				},
-			},
-		},
-		discordgo.ActionsRow{
-			Components: []discordgo.MessageComponent{
-				discordgo.Button{
-					Label:    "d10",
-					CustomID: "roll-d10",
-					Style:    discordgo.SuccessButton,
-				},
-				discordgo.Button{
-					Label:    "d12",
-					CustomID: "roll-d12",
-					Style:    discordgo.SuccessButton,
-				},
-				discordgo.Button{
-					Label:    "d20",
-					CustomID: "roll-d20",
-					Style:    discordgo.SuccessButton,
-				},
-			},
-		},
-		discordgo.ActionsRow{
-			Components: []discordgo.MessageComponent{
-				discordgo.Button{
-					Label:    "Roll!",
-					CustomID: "roll",
-					Style:    discordgo.SuccessButton,
-				},
-			},
-		},
 	}
 }
