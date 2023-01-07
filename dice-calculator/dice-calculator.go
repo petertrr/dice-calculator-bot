@@ -76,6 +76,13 @@ func MainInterfaceHandler(
 					Content: emptyEmbedContentPlaceholder,
 				},
 			})
+		} else if interactionId == "-" {
+			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseUpdateMessage,
+				Data: &discordgo.InteractionResponseData{
+					Content: i.Message.Content + "-",
+				},
+			})
 		}
 		if err != nil {
 			log.Println("ERROR: ", err)
