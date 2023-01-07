@@ -34,6 +34,11 @@ func Components() []discordgo.MessageComponent {
 					CustomID: "roll-d8",
 					Style:    discordgo.SuccessButton,
 				},
+				discordgo.Button{
+					Label:    "AC",
+					CustomID: "AC",
+					Style:    discordgo.SuccessButton,
+				},
 			},
 		},
 		discordgo.ActionsRow{

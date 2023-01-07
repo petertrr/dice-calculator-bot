@@ -8,6 +8,8 @@ import (
 	"github.com/petertrr/dice-calc-bot/parser"
 )
 
+const emptyEmbedContentPlaceholder = "<Enter an expression>"
+
 /**
  * @param roller fixme: no public interface for roller is exported from `dice`
  */
@@ -33,6 +35,9 @@ func MainInterfaceHandler(
 		log.Println("Received interaction event", i.Interaction)
 		if strings.HasPrefix(i.MessageComponentData().CustomID, "roll-") {
 			formula := i.Message.Content
+			if formula == emptyEmbedContentPlaceholder {
+				formula = ""
+			}
 			if i.Message.Content != "" {
 				formula += "+"
 			}
@@ -64,6 +69,17 @@ func MainInterfaceHandler(
 					Content: "Result: " + response,
 				},
 			})
+		} else if i.MessageComponentData().CustomID == "AC" {
+			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseUpdateMessage,
+				Data: &discordgo.InteractionResponseData{
+					// Fixme: sending a placeholder string because empty strings are not allowed by Discord API
+					Content: emptyEmbedContentPlaceholder,
+				},
+			})
+			if err != nil {
+				log.Println("ERROR: ", err)
+			}
 		}
 	} else {
 		log.Println("Received unhandled interaction event", i.Interaction)
