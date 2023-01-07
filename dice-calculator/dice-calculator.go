@@ -27,59 +27,58 @@ func MainInterfaceHandler(
 				Flags:      discordgo.MessageFlagsEphemeral,
 				Components: Components(),
 			},
-		})
+		})		
 		if err != nil {
 			log.Println("ERROR: ", err)
 		}
 	} else if i.Interaction.Type == discordgo.InteractionMessageComponent {
 		log.Println("Received interaction event", i.Interaction)
-		if strings.HasPrefix(i.MessageComponentData().CustomID, "roll-") {
+		interactionId := i.MessageComponentData().CustomID
+		var err error = nil
+		if strings.HasPrefix(interactionId, "roll-") {
 			formula := i.Message.Content
 			if formula == emptyEmbedContentPlaceholder {
 				formula = ""
 			}
-			if i.Message.Content != "" {
+			if formula != "" && formula[len(formula)-1:] != "-" {
 				formula += "+"
 			}
-			formula += "1" + strings.TrimPrefix(i.MessageComponentData().CustomID, "roll-")
-			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			formula += "1" + strings.TrimPrefix(interactionId, "roll-")
+			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseUpdateMessage,
 				Data: &discordgo.InteractionResponseData{
 					Content: formula,
 				},
 			})
-			if err != nil {
-				log.Println("ERROR: ", err)
-			}
-		} else if i.MessageComponentData().CustomID == "roll" {
+		} else if interactionId == "roll" {
 			log.Println("Rolling ", i.Message.Content)
-			rollResult, _, err := roller.Roll(i.Message.Content)
+			rollResult, _, rollerErr := roller.Roll(i.Message.Content)
 			var response string
-			if err != nil {
-				log.Println("ERROR: ", err)
-				response = "Invalid query (" + err.Error() + ")"
+			if rollerErr != nil {
+				log.Println("ERROR: ", rollerErr)
+				response = "Invalid query (" + rollerErr.Error() + ")"
 			} else {
 				log.Println("INFO: ", rollResult)
 				response = rollResult.String()
 			}
 			// todo: also delete original ephemeral message
-			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
 					Content: "Result: " + response,
 				},
 			})
-		} else if i.MessageComponentData().CustomID == "AC" {
-			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		} else if interactionId == "AC" {
+			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseUpdateMessage,
 				Data: &discordgo.InteractionResponseData{
 					// Fixme: sending a placeholder string because empty strings are not allowed by Discord API
 					Content: emptyEmbedContentPlaceholder,
 				},
 			})
-			if err != nil {
-				log.Println("ERROR: ", err)
-			}
+		}
+		if err != nil {
+			log.Println("ERROR: ", err)
 		}
 	} else {
 		log.Println("Received unhandled interaction event", i.Interaction)
