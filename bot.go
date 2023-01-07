@@ -3,9 +3,11 @@ package main
 import (
 	"flag"
 	"log"
+	"math/rand"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 	dicecalculator "github.com/petertrr/dice-calc-bot/dice-calculator"
@@ -31,6 +33,7 @@ func init() {
 	if Token == "" {
 		log.Panicf("Token should be provided in order to access Discord API")
 	}
+	rand.Seed(time.Now().UnixNano())
 }
 
 func main() {
