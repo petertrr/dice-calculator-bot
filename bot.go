@@ -45,6 +45,11 @@ func main() {
 
 	roller := parser.Antrl4BasedRoller{}
 	discord.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Println("ERROR: MainInterfaceHandler has crashed", r)
+			}
+		}()
 		dicecalculator.MainInterfaceHandler(roller, s, i)
 	})
 
