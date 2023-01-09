@@ -6,9 +6,9 @@ import (
 	"strconv"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr/v4"
+	lls "github.com/emirpasic/gods/stacks/linkedliststack"
 	"github.com/justinian/dice"
 	parser "github.com/petertrr/dice-calc-bot/parser/generated"
-	lls "github.com/emirpasic/gods/stacks/linkedliststack"
 )
 
 type DiceNotationListenerImpl struct {
@@ -41,12 +41,15 @@ func (l *DiceNotationListenerImpl) pop() dice.StdResult {
 }
 
 func (l *DiceNotationListenerImpl) push(r dice.StdResult) {
-	l.stack.Push(interface{} (r))
+	l.stack.Push(interface{}(r))
 	log.Println("DEBUG: pushed, size=", l.stack.Size(), "stack=", l.stack)
 }
 
 func (l *DiceNotationListenerImpl) ExitNotation(ctx *parser.NotationContext) {
-	if l.stack.Size() != 1 {
+	if l.stack.Size() == 0 && ctx.GetText() == "" {
+		log.Println("DEBUG: Attempt to get result when stack is empty, expression is [", ctx.GetText(), "]")
+		return
+	} else if l.stack.Size() != 1 {
 		log.Panicln("Stack contains multiple results still: ", l.stack)
 	}
 	l.result = l.pop()
