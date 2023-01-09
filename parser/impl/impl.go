@@ -8,6 +8,7 @@ import (
 	"github.com/antlr/antlr4/runtime/Go/antlr/v4"
 	"github.com/justinian/dice"
 	parser "github.com/petertrr/dice-calc-bot/parser/generated"
+	lls "github.com/emirpasic/gods/stacks/linkedliststack"
 )
 
 type DiceNotationListenerImpl struct {
@@ -15,7 +16,7 @@ type DiceNotationListenerImpl struct {
 
 	result dice.StdResult
 
-	stack []dice.StdResult
+	stack *lls.Stack
 }
 
 func NewDiceNotationListenerImpl() DiceNotationListenerImpl {
@@ -25,6 +26,7 @@ func NewDiceNotationListenerImpl() DiceNotationListenerImpl {
 			Rolls:   []int{},
 			Dropped: nil,
 		},
+		stack: lls.New(),
 	}
 }
 
@@ -33,57 +35,69 @@ func (l *DiceNotationListenerImpl) GetResult() dice.RollResult {
 }
 
 func (l *DiceNotationListenerImpl) pop() dice.StdResult {
-	log.Println("DEBUG: pop, size=", len(l.stack), "stack=", l.stack)
-	result := l.stack[len(l.stack)-1]
-	l.stack = l.stack[:len(l.stack)-1]
-	log.Println("DEBUG: popped, size=", len(l.stack))
-	return result
+	log.Println("DEBUG: pop, size=", l.stack.Size(), "stack=", l.stack)
+	result, _ := l.stack.Pop()
+	return result.(dice.StdResult)
 }
 
 func (l *DiceNotationListenerImpl) push(r dice.StdResult) {
-	log.Println("DEBUG: push, size=", len(l.stack))
-	l.stack = append(l.stack, r)
-	log.Println("DEBUG: pushed, size=", len(l.stack), "stack=", l.stack)
+	l.stack.Push(interface{} (r))
+	log.Println("DEBUG: pushed, size=", l.stack.Size(), "stack=", l.stack)
 }
 
 func (l *DiceNotationListenerImpl) ExitNotation(ctx *parser.NotationContext) {
-	if len(l.stack) != 1 {
+	if l.stack.Size() != 1 {
 		log.Panicln("Stack contains multiple results still: ", l.stack)
 	}
 	l.result = l.pop()
 }
 
 func (l *DiceNotationListenerImpl) ExitAddOp(ctx *parser.AddOpContext) {
-	if len(ctx.AllADDOPERATOR()) == 0 {
+	log.Println("DEBUG: Exiting AddOp node [", ctx.GetText(), "]")
+	numAdds := len(ctx.AllADDOPERATOR())
+	if numAdds == 0 {
 		return
 	} else {
-		// fixme: may be more than 2
-		sign := getSign(interface{}(ctx))
-		result2 := l.pop()
-		result1 := l.pop()
-		l.push(dice.StdResult{
-			Total: result1.Total + sign*result2.Total,
-			Rolls: append(result1.Rolls, result2.Rolls...),
-		})
+		var results []dice.StdResult = []dice.StdResult{}
+		for i := 0; i < numAdds+1; i++ {
+			results = append(results, l.pop())
+		}
+		lastIndex := len(results) - 1
+		var result dice.StdResult = results[lastIndex]
+		for i := 0; i < numAdds; i++ {
+			sign := getSign(ctx.ADDOPERATOR(i))
+			result2 := results[lastIndex-i-1]
+			result = dice.StdResult{
+				Total: result.Total + sign*result2.Total,
+				Rolls: append(result.Rolls, result2.Rolls...),
+			}
+		}
+		l.push(result)
 	}
 }
 
+/**
+ * FixMe: `N * DX` should be equal to `N` independent rollings instead of multiplication
+ */
 func (l *DiceNotationListenerImpl) ExitMultOp(ctx *parser.MultOpContext) {
-	if len(ctx.AllMULTOPERATOR()) == 0 {
+	log.Println("DEBUG: Exiting MultOp node [", ctx.GetText(), "]")
+	numMults := len(ctx.AllMULTOPERATOR())
+	if numMults == 0 {
 		return
 	} else {
-		// fixme: may be more than 2
-		result2 := l.pop()
-		result1 := l.pop()
-		l.push(dice.StdResult{
-			Total: result1.Total * result2.Total,
-			Rolls: append(result1.Rolls, result2.Rolls...),
-		})
+		for i := numMults - 1; i >= 0; i-- {
+			result2 := l.pop()
+			result1 := l.pop()
+			l.push(dice.StdResult{
+				Total: result1.Total * result2.Total,
+				Rolls: append(result1.Rolls, result2.Rolls...),
+			})
+		}
 	}
 }
 
 func (l *DiceNotationListenerImpl) ExitDice(ctx *parser.DiceContext) {
-	sign := getSign(interface{}(ctx))
+	sign := getSign(ctx.ADDOPERATOR())
 	digits := ctx.AllDIGIT()
 	var mult, sides int
 	if len(digits) == 1 {
@@ -99,30 +113,16 @@ func (l *DiceNotationListenerImpl) ExitDice(ctx *parser.DiceContext) {
 		Total: sign * newRoll,
 		Rolls: []int{newRoll},
 	})
-	log.Println("DEBUG: Evaluating ", ctx.GetText(), ", got: ", newRoll, ", current result: ", l.stack[len(l.stack)-1])
+	lastResult, _ := l.stack.Peek()
+	log.Println("DEBUG: Evaluating ", ctx.GetText(), ", got: ", newRoll, ", current result: ", lastResult)
 }
 
 /**
  * @param ctx either a [parser.DiceContext] or [parser.NumberContext].
  * Other types that have [ADDOPERATOR()] method can be added manually.
  */
-func getSign(ctx interface{}) int {
+func getSign(addOperator antlr.TerminalNode) int {
 	var sgn int
-	var addOperator antlr.TerminalNode
-	dc, ok := ctx.(*parser.DiceContext)
-	if ok {
-		addOperator = dc.ADDOPERATOR()
-	} else {
-		nc, ok := ctx.(*parser.NumberContext)
-		if ok {
-			addOperator = nc.ADDOPERATOR()
-		} else {
-			ac, ok := ctx.(*parser.AddOpContext)
-			if ok && len(ac.AllADDOPERATOR()) > 0 {
-				addOperator = ac.ADDOPERATOR(0)
-			}
-		}
-	}
 	if addOperator == nil {
 		sgn = 1
 	} else {
