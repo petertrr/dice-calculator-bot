@@ -27,7 +27,7 @@ func MainInterfaceHandler(
 				Flags:      discordgo.MessageFlagsEphemeral,
 				Components: Components(),
 			},
-		})		
+		})
 		if err != nil {
 			log.Println("ERROR: ", err)
 		}
@@ -43,7 +43,7 @@ func MainInterfaceHandler(
 			if formula != "" && formula[len(formula)-1:] != "-" {
 				formula += "+"
 			}
-			formula += "1" + strings.TrimPrefix(interactionId, "roll-")
+			formula += strings.TrimPrefix(interactionId, "roll-")
 			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseUpdateMessage,
 				Data: &discordgo.InteractionResponseData{
@@ -61,7 +61,8 @@ func MainInterfaceHandler(
 				log.Println("INFO: ", rollResult)
 				response = rollResult.String()
 			}
-			// todo: also delete original ephemeral message
+			// todo: also delete original ephemeral message. Caveat: ephemeral messages cannot
+			//  be deleted like normal messages.
 			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
@@ -81,6 +82,13 @@ func MainInterfaceHandler(
 				Type: discordgo.InteractionResponseUpdateMessage,
 				Data: &discordgo.InteractionResponseData{
 					Content: i.Message.Content + "-",
+				},
+			})
+		} else if interactionId == "*" {
+			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseUpdateMessage,
+				Data: &discordgo.InteractionResponseData{
+					Content: i.Message.Content + "*",
 				},
 			})
 		}
