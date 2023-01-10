@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"log"
+
 	"github.com/antlr/antlr4/runtime/Go/antlr/v4"
 	"github.com/justinian/dice"
 	parser "github.com/petertrr/dice-calc-bot/parser/generated"
@@ -11,6 +13,8 @@ type Antrl4BasedRoller struct {
 }
 
 func (Antrl4BasedRoller) Roll(desc string) (dice.RollResult, string, error) {
+	log.Println("DEBUG: Rolling [", desc, "]")
+
 	parser.DiceNotationParserInit()
 
 	is := antlr.NewInputStream(desc)
