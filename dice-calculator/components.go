@@ -6,19 +6,7 @@ func Components() []discordgo.MessageComponent {
 	return []discordgo.MessageComponent{
 		discordgo.ActionsRow{
 			Components: []discordgo.MessageComponent{
-				discordgo.Button{
-					Label:    "Take a look inside",
-					Style:    discordgo.LinkButton,
-					Disabled: false,
-					URL:      "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-					Emoji: discordgo.ComponentEmoji{
-						Name: "🤷",
-					},
-				},
-			},
-		},
-		discordgo.ActionsRow{
-			Components: []discordgo.MessageComponent{
+
 				discordgo.Button{
 					Label:    "d4",
 					CustomID: "roll-d4",
@@ -37,7 +25,14 @@ func Components() []discordgo.MessageComponent {
 				discordgo.Button{
 					Label:    "AC",
 					CustomID: "AC",
-					Style:    discordgo.SuccessButton,
+					Style:    discordgo.DangerButton,
+				},
+				discordgo.Button{
+					Label:    "dx",
+					CustomID: "empty-dx",
+					Style:    discordgo.SecondaryButton,
+					// this button is TODO
+					Disabled: true,
 				},
 			},
 		},
@@ -59,8 +54,75 @@ func Components() []discordgo.MessageComponent {
 					Style:    discordgo.SuccessButton,
 				},
 				discordgo.Button{
+					Label:    "+",
+					CustomID: "+",
+					Style:    discordgo.SecondaryButton,
+				},
+				discordgo.Button{
+					Label:    "(",
+					CustomID: "empty-lpar",
+					Style:    discordgo.SecondaryButton,
+					// this button is TODO
+					Disabled: true,
+				},
+			},
+		},
+		discordgo.ActionsRow{
+			Components: []discordgo.MessageComponent{
+				discordgo.Button{
+					Label:    "7",
+					CustomID: "roll-7",
+					Style:    discordgo.SuccessButton,
+				},
+				discordgo.Button{
+					Label:    "8",
+					CustomID: "roll-8",
+					Style:    discordgo.SuccessButton,
+				},
+				discordgo.Button{
+					Label:    "9",
+					CustomID: "roll-9",
+					Style:    discordgo.SuccessButton,
+				},
+				discordgo.Button{
 					Label:    "-",
 					CustomID: "-",
+					Style:    discordgo.SecondaryButton,
+				},
+				discordgo.Button{
+					Label:    ")",
+					CustomID: "empty-rpar",
+					Style:    discordgo.SecondaryButton,
+					// this button is TODO
+					Disabled: true,
+				},
+			},
+		},
+		discordgo.ActionsRow{
+			Components: []discordgo.MessageComponent{
+				discordgo.Button{
+					Label:    "4",
+					CustomID: "roll-4",
+					Style:    discordgo.SuccessButton,
+				},
+				discordgo.Button{
+					Label:    "5",
+					CustomID: "roll-5",
+					Style:    discordgo.SuccessButton,
+				},
+				discordgo.Button{
+					Label:    "6",
+					CustomID: "roll-6",
+					Style:    discordgo.SuccessButton,
+				},
+				discordgo.Button{
+					Label:    "*",
+					CustomID: "*",
+					Style:    discordgo.SecondaryButton,
+				},
+				discordgo.Button{
+					Label:    "0",
+					CustomID: "roll-0",
 					Style:    discordgo.SuccessButton,
 				},
 			},
@@ -68,9 +130,24 @@ func Components() []discordgo.MessageComponent {
 		discordgo.ActionsRow{
 			Components: []discordgo.MessageComponent{
 				discordgo.Button{
+					Label:    "1",
+					CustomID: "roll-1",
+					Style:    discordgo.SuccessButton,
+				},
+				discordgo.Button{
+					Label:    "2",
+					CustomID: "roll-2",
+					Style:    discordgo.SuccessButton,
+				},
+				discordgo.Button{
+					Label:    "3",
+					CustomID: "roll-3",
+					Style:    discordgo.SuccessButton,
+				},
+				discordgo.Button{
 					Label:    "Roll!",
 					CustomID: "roll",
-					Style:    discordgo.SuccessButton,
+					Style:    discordgo.PrimaryButton,
 				},
 			},
 		},

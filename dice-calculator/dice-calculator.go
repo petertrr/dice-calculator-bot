@@ -40,9 +40,6 @@ func MainInterfaceHandler(
 			if formula == emptyEmbedContentPlaceholder {
 				formula = ""
 			}
-			if formula != "" && formula[len(formula)-1:] != "-" {
-				formula += "+"
-			}
 			formula += strings.TrimPrefix(interactionId, "roll-")
 			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseUpdateMessage,
@@ -77,18 +74,11 @@ func MainInterfaceHandler(
 					Content: emptyEmbedContentPlaceholder,
 				},
 			})
-		} else if interactionId == "-" {
+		} else if interactionId == "-" || interactionId == "+" || interactionId == "*" {
 			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseUpdateMessage,
 				Data: &discordgo.InteractionResponseData{
-					Content: i.Message.Content + "-",
-				},
-			})
-		} else if interactionId == "*" {
-			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-				Type: discordgo.InteractionResponseUpdateMessage,
-				Data: &discordgo.InteractionResponseData{
-					Content: i.Message.Content + "*",
+					Content: i.Message.Content + interactionId,
 				},
 			})
 		}
