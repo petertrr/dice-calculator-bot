@@ -79,9 +79,6 @@ func (l *DiceNotationListenerImpl) ExitAddOp(ctx *parser.AddOpContext) {
 	}
 }
 
-/**
- * FixMe: `N * DX` should be equal to `N` independent rollings instead of multiplication
- */
 func (l *DiceNotationListenerImpl) ExitMultOp(ctx *parser.MultOpContext) {
 	log.Println("DEBUG: Exiting MultOp node [", ctx.GetText(), "]")
 	numMults := len(ctx.AllMULTOPERATOR())
@@ -110,14 +107,20 @@ func (l *DiceNotationListenerImpl) ExitDice(ctx *parser.DiceContext) {
 		mult, _ = strconv.Atoi(digits[0].GetText())
 		sides, _ = strconv.Atoi(digits[1].GetText())
 	}
-	roll := rand.Intn(int(sides)) + 1
-	newRoll := mult * roll
+	var rolls = []int{}
+	// fixme: find a library with reducer over a list instead of manual summing
+	total := 0
+	for i := 0; i < mult; i++ {
+		roll := rand.Intn(int(sides)) + 1
+		rolls = append(rolls, roll)
+		total += roll
+	}
 	l.push(dice.StdResult{
-		Total: sign * newRoll,
-		Rolls: []int{newRoll},
+		Total: sign * total,
+		Rolls: rolls,
 	})
 	lastResult, _ := l.stack.Peek()
-	log.Println("DEBUG: Evaluating ", ctx.GetText(), ", got: ", newRoll, ", current result: ", lastResult)
+	log.Println("DEBUG: Evaluating ", ctx.GetText(), ", current result: ", lastResult)
 }
 
 /**
