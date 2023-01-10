@@ -123,6 +123,15 @@ func (l *DiceNotationListenerImpl) ExitDice(ctx *parser.DiceContext) {
 	log.Println("DEBUG: Evaluating ", ctx.GetText(), ", current result: ", lastResult)
 }
 
+func (l *DiceNotationListenerImpl) ExitNumber(ctx *parser.NumberContext) {
+	sign := getSign(ctx.ADDOPERATOR())
+	delta, _ := strconv.Atoi(ctx.DIGIT().GetText())
+	l.stack.Push(dice.StdResult{
+		Total: sign * delta,
+		Rolls: []int{},
+	})
+}
+
 /**
  * @param ctx either a [parser.DiceContext] or [parser.NumberContext].
  * Other types that have [ADDOPERATOR()] method can be added manually.
