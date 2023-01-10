@@ -19,7 +19,9 @@ jobs:
         run: make prepare
       - name: Build the image
         run: |
-          pack build dice-calculator-bot --buildpack paketo-buildpacks/go --builder paketobuildpacks/builder:base
+          pack build ghcr.io/${{ github.repository }} \
+            --buildpack paketo-buildpacks/go --builder paketobuildpacks/builder:base \
+            --tag ghcr.io/${{ github.repository }}:latest
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
