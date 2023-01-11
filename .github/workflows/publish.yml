@@ -20,7 +20,7 @@ jobs:
         id: calculate-semver
       - name: Store reckoned version into env
         run: |
-          echo VERSION=${{ steps.calculate-semver.outputs.fullSemVer }} | tee -a $GITHUB_ENV
+          echo VERSION=${{ steps.calculate-semver.outputs.fullSemVer }} | sed 's/+/-/g' | tee -a $GITHUB_ENV
       - name: Generate go code
         run: make prepare
       - name: Build the image
