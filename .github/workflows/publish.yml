@@ -1,8 +1,6 @@
 name: Publish OCI image
 on:
   workflow_dispatch:
-  # TODO: remove after testing
-  pull_request:
 
 jobs:
   publish:
@@ -15,6 +13,14 @@ jobs:
           fetch-depth: 0
       - name: Install pack CLI
         run: (curl -sSL "https://github.com/buildpacks/pack/releases/download/v$PACK_VERSION/pack-v$PACK_VERSION-linux.tgz" | sudo tar -C /usr/local/bin/ --no-same-owner -xzv pack)
+      - uses: gittools/actions/gitversion/setup@v0.9.15
+        with:
+          versionSpec: 5.x
+      - uses: gittools/actions/gitversion/execute@v0.9.15
+        id: calculate-semver
+      - name: Store reckoned version into env
+        run: |
+          echo VERSION=${{ steps.calculate-semver.outputs.fullSemVer }} | tee -a $GITHUB_ENV
       - name: Generate go code
         run: make prepare
       - name: Build the image
@@ -22,6 +28,7 @@ jobs:
           pack build ghcr.io/${{ github.repository }} \
             --buildpack paketo-buildpacks/go --builder paketobuildpacks/builder:base \
             --tag ghcr.io/${{ github.repository }}:latest
+            --tag ghcr.io/${{ github.repository }}:$VERSION
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
@@ -29,4 +36,4 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish the image
-        run: docker push ghcr.io/${{ github.repository }}:latest
+        run: docker push ghcr.io/${{ github.repository }} --all-tags
