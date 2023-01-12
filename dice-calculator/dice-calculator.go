@@ -63,7 +63,11 @@ func MainInterfaceHandler(
 			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
-					Content: "Result: " + response,
+					Content: "<@" + i.Interaction.Member.User.ID + "> rolled " + response,
+					AllowedMentions: &discordgo.MessageAllowedMentions{
+						Users:       []string{i.Interaction.Member.User.ID},
+						RepliedUser: true,
+					},
 				},
 			})
 		} else if interactionId == "AC" {
