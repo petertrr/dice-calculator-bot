@@ -45,13 +45,15 @@ func TestBasicRolls(t *testing.T) {
 }
 
 func shouldBeTotal(d dice.RollResult, total int, t *testing.T) {
-	if d.Int() != total {
-		t.Error("Expected total to be ", total, ", but found ", d.Int())
+	if d.(dice.StdResult).Total != total {
+		t.Helper()
+		t.Error("Expected total to be ", total, ", but found ", d.(dice.StdResult).Total)
 	}
 }
 
 func shouldBeRolls(d dice.StdResult, rolls []int, t *testing.T) {
 	if !arrayEquals(d.Rolls, rolls) {
+		t.Helper()
 		t.Error("Expected rolls to be ", rolls, ", but found ", d.Rolls)
 	}
 }
