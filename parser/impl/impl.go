@@ -1,7 +1,9 @@
 package impl
 
 import (
+	"errors"
 	"log"
+	"sort"
 	"strconv"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr/v4"
@@ -91,8 +93,9 @@ func (l *DiceNotationListenerImpl) ExitMultOp(ctx *parser.MultOpContext) {
 			result2 := l.pop()
 			result1 := l.pop()
 			l.push(dice.StdResult{
-				Total: result1.Total * result2.Total,
-				Rolls: append(result1.Rolls, result2.Rolls...),
+				Total:   result1.Total * result2.Total,
+				Rolls:   append(result1.Rolls, result2.Rolls...),
+				Dropped: append(result1.Dropped, result2.Dropped...),
 			})
 		}
 	}
@@ -101,14 +104,15 @@ func (l *DiceNotationListenerImpl) ExitMultOp(ctx *parser.MultOpContext) {
 func (l *DiceNotationListenerImpl) ExitDice(ctx *parser.DiceContext) {
 	sign := getSign(ctx.ADDOPERATOR())
 	digits := ctx.AllDIGIT()
-	var mult, sides int
-	if len(digits) == 1 {
-		mult = 1
-		sides, _ = strconv.Atoi(digits[0].GetText())
-	} else {
-		mult, _ = strconv.Atoi(digits[0].GetText())
-		sides, _ = strconv.Atoi(digits[1].GetText())
+	var mult, sides, _ = getMultSides(digits)
+	var keepModifier *KeepModifier = nil
+	if ctx.Modifier() != nil {
+		keepModifier = ParseModifier(ctx.Modifier().GetText())
+		if keepModifier.Number > mult {
+			panic(errors.New("Incorrect usage of <" + ctx.Modifier().GetText() + ">: number should be less or equal than number of dice in <" + ctx.GetText() + ">"))
+		}
 	}
+
 	var rolls = []int{}
 	// fixme: find a library with reducer over a list instead of manual summing
 	total := 0
@@ -117,9 +121,34 @@ func (l *DiceNotationListenerImpl) ExitDice(ctx *parser.DiceContext) {
 		rolls = append(rolls, roll)
 		total += roll
 	}
+
+	droppedRolls := []int{}
+	if keepModifier != nil {
+		rollsCopy := make([]int, len(rolls))
+		copy(rollsCopy, rolls)
+		sort.Ints(rollsCopy)
+		if keepModifier.Mode == Keep {
+			if keepModifier.SortMode == Highest {
+				droppedRolls = rollsCopy[:len(rollsCopy)-keepModifier.Number]
+			} else {
+				droppedRolls = rollsCopy[keepModifier.Number:]
+			}
+		} else {
+			if keepModifier.SortMode == Highest {
+				droppedRolls = rollsCopy[len(rollsCopy)-keepModifier.Number:]
+			} else {
+				droppedRolls = rollsCopy[:keepModifier.Number]
+			}
+		}
+		for _, v := range droppedRolls {
+			total -= v
+		}
+	}
+
 	l.push(dice.StdResult{
-		Total: sign * total,
-		Rolls: rolls,
+		Total:   sign * total,
+		Rolls:   rolls,
+		Dropped: droppedRolls,
 	})
 	lastResult, _ := l.stack.Peek()
 	log.Println("DEBUG: Evaluating ", ctx.GetText(), ", current result: ", lastResult)
@@ -151,4 +180,20 @@ func getSign(addOperator antlr.TerminalNode) int {
 		}
 	}
 	return sgn
+}
+
+func getMultSides(digits []antlr.TerminalNode) (int, int, error) {
+	var mult, sides int
+	var err error
+	if len(digits) == 1 {
+		mult = 1
+		sides, err = strconv.Atoi(digits[0].GetText())
+	} else {
+		mult, err = strconv.Atoi(digits[0].GetText())
+		sides, err = strconv.Atoi(digits[1].GetText())
+	}
+	if err != nil {
+		return -1, -1, err
+	}
+	return mult, sides, nil
 }
