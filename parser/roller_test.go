@@ -1,17 +1,16 @@
 package parser_test
 
 import (
-	"math/rand"
 	"testing"
 
 	"github.com/justinian/dice"
 	"github.com/petertrr/dice-calc-bot/parser"
 )
 
-func Test(t *testing.T) {
-	roller := parser.Antrl4BasedRoller{}
-	rand.Seed(0)
-
+func TestBasicRolls(t *testing.T) {
+	roller := parser.NewAntrl4BasedRoller(
+		func(x int) int { return x/2 + 1 },
+	)
 	var result dice.RollResult
 
 	result, _, _ = roller.Roll("d4")

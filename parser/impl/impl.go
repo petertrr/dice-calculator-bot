@@ -2,7 +2,6 @@ package impl
 
 import (
 	"log"
-	"math/rand"
 	"strconv"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr/v4"
@@ -17,9 +16,11 @@ type DiceNotationListenerImpl struct {
 	result dice.StdResult
 
 	stack *lls.Stack
+
+	Rand func(int) int
 }
 
-func NewDiceNotationListenerImpl() DiceNotationListenerImpl {
+func NewDiceNotationListenerImpl(rand func(int) int) DiceNotationListenerImpl {
 	return DiceNotationListenerImpl{
 		result: dice.StdResult{
 			Total:   0,
@@ -27,6 +28,7 @@ func NewDiceNotationListenerImpl() DiceNotationListenerImpl {
 			Dropped: nil,
 		},
 		stack: lls.New(),
+		Rand:  rand,
 	}
 }
 
@@ -111,7 +113,7 @@ func (l *DiceNotationListenerImpl) ExitDice(ctx *parser.DiceContext) {
 	// fixme: find a library with reducer over a list instead of manual summing
 	total := 0
 	for i := 0; i < mult; i++ {
-		roll := rand.Intn(int(sides)) + 1
+		roll := l.Rand(int(sides))
 		rolls = append(rolls, roll)
 		total += roll
 	}

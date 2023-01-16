@@ -43,7 +43,9 @@ func main() {
 		return
 	}
 
-	roller := parser.Antrl4BasedRoller{}
+	roller := parser.NewAntrl4BasedRoller(
+		func (x int) int { return rand.Intn(x) + 1 },
+	)
 	discord.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		defer func() {
 			if r := recover(); r != nil {
