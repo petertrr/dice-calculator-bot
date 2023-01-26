@@ -24,6 +24,18 @@ var (
 			Name:        "dice-calc",
 			Description: "Show the dice calculator interface",
 		},
+		{
+			Name:        "dice-roll",
+			Description: "Evaluate dice notation expression",
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Type:        discordgo.ApplicationCommandOptionString,
+					Name:        "expression",
+					Description: "dice expression (e.g. `d20+5`)",
+					Required:    true,
+				},
+			},
+		},
 	}
 )
 
@@ -44,7 +56,7 @@ func main() {
 	}
 
 	roller := parser.NewAntrl4BasedRoller(
-		func (x int) int { return rand.Intn(x) + 1 },
+		func(x int) int { return rand.Intn(x) + 1 },
 	)
 	discord.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		defer func() {
@@ -69,6 +81,7 @@ func main() {
 		if err != nil {
 			log.Panicf("Cannot create '%v' command: %v", v.Name, err)
 		}
+		log.Println("INFO: registered command [", v, "]")
 		registeredCommands[i] = cmd
 	}
 

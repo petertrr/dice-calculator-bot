@@ -19,15 +19,31 @@ func MainInterfaceHandler(
 	i *discordgo.InteractionCreate,
 ) {
 	if i.Interaction.Type == discordgo.InteractionApplicationCommand {
+		var err error
+		commandName := i.Interaction.ApplicationCommandData().Name
 		log.Println("Received interaction event", i.Interaction)
-		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content:    "",
-				Flags:      discordgo.MessageFlagsEphemeral,
-				Components: Components(),
-			},
-		})
+		if commandName == "dice-calc" {
+			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content:    "",
+					Flags:      discordgo.MessageFlagsEphemeral,
+					Components: Components(),
+				},
+			})
+		} else if commandName == "dice-roll" {
+			var expression string
+			for _, option := range i.Interaction.ApplicationCommandData().Options {
+				if option.Name == "expression" {
+					expression = option.StringValue()
+					break
+				}
+			}
+			if expression == "" {
+				log.Panicln("ERROR: cannot roll an empty expression")
+			}
+			respondWithRollResult(expression, roller, s, i)
+		}
 		if err != nil {
 			log.Println("ERROR: ", err)
 		}
@@ -50,27 +66,9 @@ func MainInterfaceHandler(
 		} else if interactionId == "roll" {
 			expression := i.Message.Content
 			log.Println("Rolling ", expression)
-			rollResult, _, rollerErr := roller.Roll(expression)
-			var response string
-			if rollerErr != nil {
-				log.Println("ERROR: ", rollerErr)
-				response = "Invalid query (" + rollerErr.Error() + ")"
-			} else {
-				log.Println("INFO: ", rollResult)
-				response = rollResult.String()
-			}
 			// todo: also delete original ephemeral message. Caveat: ephemeral messages cannot
 			//  be deleted like normal messages.
-			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-				Type: discordgo.InteractionResponseChannelMessageWithSource,
-				Data: &discordgo.InteractionResponseData{
-					Content: "<@" + i.Interaction.Member.User.ID + "> is rolling " + expression + ": " + response,
-					AllowedMentions: &discordgo.MessageAllowedMentions{
-						Users:       []string{i.Interaction.Member.User.ID},
-						RepliedUser: true,
-					},
-				},
-			})
+			respondWithRollResult(expression, roller, s, i)
 		} else if interactionId == "AC" {
 			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseUpdateMessage,
@@ -93,4 +91,33 @@ func MainInterfaceHandler(
 	} else {
 		log.Println("Received unhandled interaction event", i.Interaction)
 	}
+}
+
+func respondWithRollResult(
+	expression string,
+	roller parser.Antrl4BasedRoller,
+	s *discordgo.Session,
+	i *discordgo.InteractionCreate,
+) error {
+	log.Println("Rolling ", expression)
+	rollResult, _, rollerErr := roller.Roll(expression)
+	var response string
+	if rollerErr != nil {
+		log.Println("ERROR: ", rollerErr)
+		response = "Invalid query (" + rollerErr.Error() + ")"
+	} else {
+		log.Println("INFO: ", rollResult)
+		response = rollResult.String()
+	}
+	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: "<@" + i.Interaction.Member.User.ID + "> is rolling " + expression + ": " + response,
+			AllowedMentions: &discordgo.MessageAllowedMentions{
+				Users:       []string{i.Interaction.Member.User.ID},
+				RepliedUser: true,
+			},
+		},
+	})
+	return err
 }
