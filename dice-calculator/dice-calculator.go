@@ -77,6 +77,21 @@ func MainInterfaceHandler(
 					Content: emptyEmbedContentPlaceholder,
 				},
 			})
+		} else if interactionId == BackspaceCommandId {
+			originalMessage := i.Message.Content
+			trimmedMessage := originalMessage
+			if originalMessage != emptyEmbedContentPlaceholder {
+				trimmedMessage = originalMessage[:len(originalMessage)-1]
+				if trimmedMessage == "" {
+					trimmedMessage = emptyEmbedContentPlaceholder
+				}
+			}
+			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseUpdateMessage,
+				Data: &discordgo.InteractionResponseData{
+					Content: trimmedMessage,
+				},
+			})
 		} else if interactionId == "-" || interactionId == "+" || interactionId == "*" {
 			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseUpdateMessage,

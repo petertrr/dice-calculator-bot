@@ -2,6 +2,10 @@ package dicecalculator
 
 import "github.com/bwmarrin/discordgo"
 
+const (
+	BackspaceCommandId = "bckspc"
+)
+
 func Components() []discordgo.MessageComponent {
 	return []discordgo.MessageComponent{
 		discordgo.ActionsRow{
@@ -23,16 +27,14 @@ func Components() []discordgo.MessageComponent {
 					Style:    discordgo.SuccessButton,
 				},
 				discordgo.Button{
-					Label:    "AC",
-					CustomID: "AC",
+					Label:    "⌫",
+					CustomID: BackspaceCommandId,
 					Style:    discordgo.DangerButton,
 				},
 				discordgo.Button{
-					Label:    "dx",
-					CustomID: "empty-dx",
-					Style:    discordgo.SecondaryButton,
-					// this button is TODO
-					Disabled: true,
+					Label:    "AC",
+					CustomID: "AC",
+					Style:    discordgo.DangerButton,
 				},
 			},
 		},
@@ -121,9 +123,11 @@ func Components() []discordgo.MessageComponent {
 					Style:    discordgo.SecondaryButton,
 				},
 				discordgo.Button{
-					Label:    "0",
-					CustomID: "roll-0",
-					Style:    discordgo.SuccessButton,
+					Label:    "dx",
+					CustomID: "empty-dx",
+					Style:    discordgo.SecondaryButton,
+					// this button is TODO
+					Disabled: true,
 				},
 			},
 		},
@@ -142,6 +146,11 @@ func Components() []discordgo.MessageComponent {
 				discordgo.Button{
 					Label:    "3",
 					CustomID: "roll-3",
+					Style:    discordgo.SuccessButton,
+				},
+				discordgo.Button{
+					Label:    "0",
+					CustomID: "roll-0",
 					Style:    discordgo.SuccessButton,
 				},
 				discordgo.Button{
