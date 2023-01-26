@@ -48,8 +48,9 @@ func MainInterfaceHandler(
 				},
 			})
 		} else if interactionId == "roll" {
-			log.Println("Rolling ", i.Message.Content)
-			rollResult, _, rollerErr := roller.Roll(i.Message.Content)
+			expression := i.Message.Content
+			log.Println("Rolling ", expression)
+			rollResult, _, rollerErr := roller.Roll(expression)
 			var response string
 			if rollerErr != nil {
 				log.Println("ERROR: ", rollerErr)
@@ -63,7 +64,7 @@ func MainInterfaceHandler(
 			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
-					Content: "<@" + i.Interaction.Member.User.ID + "> rolled " + response,
+					Content: "<@" + i.Interaction.Member.User.ID + "> is rolling " + expression + ": " + response,
 					AllowedMentions: &discordgo.MessageAllowedMentions{
 						Users:       []string{i.Interaction.Member.User.ID},
 						RepliedUser: true,
