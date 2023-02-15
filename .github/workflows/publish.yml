@@ -1,6 +1,11 @@
 name: Publish OCI image
 on:
   workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Ref to build from'
+        required: false
+        type: string
   push:
     tags:
       - 'v*'
@@ -14,6 +19,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+          ref: ${{ inputs.ref }}
       - name: Install pack CLI
         run: (curl -sSL "https://github.com/buildpacks/pack/releases/download/v$PACK_VERSION/pack-v$PACK_VERSION-linux.tgz" | sudo tar -C /usr/local/bin/ --no-same-owner -xzv pack)
       - uses: gittools/actions/gitversion/setup@v0.9.15
