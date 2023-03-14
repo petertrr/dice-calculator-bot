@@ -29,7 +29,9 @@ jobs:
       - name: Build the image
         run: |
           pack build ghcr.io/${{ github.repository }} \
-            --buildpack paketo-buildpacks/go --builder paketobuildpacks/builder:base \
+            --buildpack paketo-buildpacks/go \
+            --builder paketobuildpacks/builder:base \
+            --env BP_GO_TARGETS="./bot-discord" \
             --tag ghcr.io/${{ github.repository }}:latest \
             --tag ghcr.io/${{ github.repository }}:$VERSION
       - name: Login to GitHub Container Registry
