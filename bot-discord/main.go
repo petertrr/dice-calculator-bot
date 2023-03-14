@@ -90,5 +90,6 @@ func main() {
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-sc
 
+	log.Println("Bot is shutting down.")
 	discord.Close()
 }

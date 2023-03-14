@@ -60,7 +60,8 @@ func MainInterfaceHandler(
 			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseUpdateMessage,
 				Data: &discordgo.InteractionResponseData{
-					Content: formula,
+					Content:    formula,
+					Components: i.Message.Components,
 				},
 			})
 		} else if interactionId == "roll" {
@@ -74,7 +75,8 @@ func MainInterfaceHandler(
 				Type: discordgo.InteractionResponseUpdateMessage,
 				Data: &discordgo.InteractionResponseData{
 					// Fixme: sending a placeholder string because empty strings are not allowed by Discord API
-					Content: emptyEmbedContentPlaceholder,
+					Content:    emptyEmbedContentPlaceholder,
+					Components: i.Message.Components,
 				},
 			})
 		} else if interactionId == BackspaceCommandId {
@@ -89,14 +91,16 @@ func MainInterfaceHandler(
 			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseUpdateMessage,
 				Data: &discordgo.InteractionResponseData{
-					Content: trimmedMessage,
+					Content:    trimmedMessage,
+					Components: i.Message.Components,
 				},
 			})
 		} else if interactionId == "-" || interactionId == "+" || interactionId == "*" {
 			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseUpdateMessage,
 				Data: &discordgo.InteractionResponseData{
-					Content: i.Message.Content + interactionId,
+					Content:    i.Message.Content + interactionId,
+					Components: i.Message.Components,
 				},
 			})
 		}
