@@ -31,7 +31,7 @@ jobs:
           pack build ghcr.io/${{ github.repository }} \
             --buildpack paketo-buildpacks/go \
             --builder paketobuildpacks/builder:base \
-            --env BP_GO_TARGETS="./bot-discord" \
+            --env BP_GO_TARGETS="./bot-discord:./bot-telegram" \
             --tag ghcr.io/${{ github.repository }}:latest \
             --tag ghcr.io/${{ github.repository }}:$VERSION
       - name: Login to GitHub Container Registry
