@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
-	dicecalculator "github.com/petertrr/dice-calc-bot/dice-calculator"
 	"github.com/petertrr/dice-calc-bot/parser"
 )
 
@@ -64,7 +63,7 @@ func main() {
 				log.Println("ERROR: MainInterfaceHandler has crashed", r)
 			}
 		}()
-		dicecalculator.MainInterfaceHandler(roller, s, i)
+		MainInterfaceHandler(roller, s, i)
 	})
 
 	// Open a websocket connection to Discord and begin listening.

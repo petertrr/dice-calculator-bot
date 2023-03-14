@@ -1,4 +1,4 @@
-package dicecalculator
+package main
 
 import "github.com/bwmarrin/discordgo"
 
