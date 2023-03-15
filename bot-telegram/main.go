@@ -15,10 +15,9 @@ import (
 )
 
 var (
-	Token string
+	Token  string
 	roller parser.Antrl4BasedRoller
 )
-
 
 func init() {
 	flag.StringVar(&Token, "t", "", "Bot Token")
@@ -64,20 +63,20 @@ func process(updates tgbotapi.UpdatesChannel, bot *tgbotapi.BotAPI) {
 }
 
 func processUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI) {
-		defer func() {
-			if r := recover(); r != nil {
-				log.Println("ERROR: error processing update", r)
-			}
-		}()
-		// processing
-		text := update.Message.Text
-		var result dice.RollResult
-		if text != "" {
-			result, _, _ = roller.Roll(text)
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println("ERROR: error processing update", r)
 		}
+	}()
+	// processing
+	text := update.Message.Text
+	var result dice.RollResult
+	if text != "" {
+		result, _, _ = roller.Roll(text)
+	}
 
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, result.String())
-		msg.ReplyToMessageID = update.Message.MessageID
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "@"+update.SentFrom().UserName+" rolled "+result.String())
+	msg.ReplyToMessageID = update.Message.MessageID
 
-		bot.Send(msg)
+	bot.Send(msg)
 }
