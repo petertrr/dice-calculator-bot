@@ -6,7 +6,7 @@ prepare:
 	go generate ./...
 
 build : prepare
-	go build -o ${BUILD_DIR}/${BASENAME} ${PWD}
+	go build -o ${BUILD_DIR}/${BASENAME}-discord ${PWD}/bot-discord
 
 clean:
 	rm -rf ${BUILD_DIR}/
