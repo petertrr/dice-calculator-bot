@@ -1,7 +1,6 @@
 package common
 
 import (
-	"flag"
 	"log"
 	"math/rand"
 	"os"
@@ -11,18 +10,6 @@ import (
 
 	"github.com/petertrr/dice-calc-bot/parser"
 )
-
-// var (
-// 	Token string
-// )
-
-// func setup() {
-// 	flag.StringVar(&Token, "t", "", "Bot Token")
-// 	flag.Parse()
-// 	if Token == "" {
-// 		log.Panicf("Token should be provided in order to access Discord API")
-// 	}
-// }
 
 type CommonBotContext struct {
 	Roller *parser.Antrl4BasedRoller

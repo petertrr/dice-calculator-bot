@@ -48,7 +48,7 @@ func main() {
 		return
 	}
 
-	c := common.CommonBotContext {}
+	c := common.CommonBotContext{}
 	c.Setup()
 
 	discord.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
