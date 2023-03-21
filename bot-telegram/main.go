@@ -7,12 +7,10 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/justinian/dice"
 	common "github.com/petertrr/dice-calc-bot/bot-common"
-	"github.com/petertrr/dice-calc-bot/parser"
 )
 
 var (
-	Token  string
-	roller parser.Antrl4BasedRoller
+	Token string
 )
 
 func init() {
@@ -30,7 +28,7 @@ func main() {
 		return
 	}
 
-	c := common.CommonBotContext{}
+	c := &common.CommonBotContext{}
 	c.Setup()
 
 	u := tgbotapi.NewUpdate(0)
@@ -38,19 +36,19 @@ func main() {
 
 	updates := bot.GetUpdatesChan(u)
 
-	go process(updates, bot)
+	go process(updates, bot, c)
 
 	common.WaitForGracefulShutdown()
 	bot.StopReceivingUpdates()
 }
 
-func process(updates tgbotapi.UpdatesChannel, bot *tgbotapi.BotAPI) {
+func process(updates tgbotapi.UpdatesChannel, bot *tgbotapi.BotAPI, ctx *common.CommonBotContext) {
 	for update := range updates {
-		processUpdate(update, bot)
+		processUpdate(update, bot, ctx)
 	}
 }
 
-func processUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI) {
+func processUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, ctx *common.CommonBotContext) {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Println("ERROR: error processing update", r)
@@ -60,7 +58,7 @@ func processUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI) {
 	text := update.Message.Text
 	var result dice.RollResult
 	if text != "" {
-		result, _, _ = roller.Roll(text)
+		result, _, _ = ctx.Roller.Roll(text)
 	}
 
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "@"+update.SentFrom().UserName+" rolled "+result.String())
