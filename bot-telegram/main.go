@@ -3,14 +3,10 @@ package main
 import (
 	"flag"
 	"log"
-	"math/rand"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/justinian/dice"
+	common "github.com/petertrr/dice-calc-bot/bot-common"
 	"github.com/petertrr/dice-calc-bot/parser"
 )
 
@@ -25,7 +21,6 @@ func init() {
 	if Token == "" {
 		log.Panicf("Token should be provided in order to access Telegram API")
 	}
-	rand.Seed(time.Now().UnixNano())
 }
 
 func main() {
@@ -35,9 +30,8 @@ func main() {
 		return
 	}
 
-	roller = parser.NewAntrl4BasedRoller(
-		func(x int) int { return rand.Intn(x) + 1 },
-	)
+	c := common.CommonBotContext{}
+	c.Setup()
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
@@ -46,13 +40,7 @@ func main() {
 
 	go process(updates, bot)
 
-	// Wait here until CTRL-C or other term signal is received.
-	log.Println("Bot is now running.")
-	sc := make(chan os.Signal, 1)
-	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
-	<-sc
-
-	log.Println("Bot is shutting down.")
+	common.WaitForGracefulShutdown()
 	bot.StopReceivingUpdates()
 }
 

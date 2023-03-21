@@ -14,7 +14,7 @@ const emptyEmbedContentPlaceholder = "<Enter an expression>"
  * @param roller fixme: no public interface for roller is exported from `dice`
  */
 func MainInterfaceHandler(
-	roller parser.Antrl4BasedRoller,
+	roller *parser.Antrl4BasedRoller,
 	s *discordgo.Session,
 	i *discordgo.InteractionCreate,
 ) {
@@ -114,7 +114,7 @@ func MainInterfaceHandler(
 
 func respondWithRollResult(
 	expression string,
-	roller parser.Antrl4BasedRoller,
+	roller *parser.Antrl4BasedRoller,
 	s *discordgo.Session,
 	i *discordgo.InteractionCreate,
 ) error {

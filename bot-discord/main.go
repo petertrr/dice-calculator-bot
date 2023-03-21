@@ -3,14 +3,9 @@ package main
 import (
 	"flag"
 	"log"
-	"math/rand"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/petertrr/dice-calc-bot/parser"
+	common "github.com/petertrr/dice-calc-bot/bot-common"
 )
 
 var (
@@ -44,7 +39,6 @@ func init() {
 	if Token == "" {
 		log.Panicf("Token should be provided in order to access Discord API")
 	}
-	rand.Seed(time.Now().UnixNano())
 }
 
 func main() {
@@ -54,16 +48,16 @@ func main() {
 		return
 	}
 
-	roller := parser.NewAntrl4BasedRoller(
-		func(x int) int { return rand.Intn(x) + 1 },
-	)
+	c := common.CommonBotContext {}
+	c.Setup()
+
 	discord.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		defer func() {
 			if r := recover(); r != nil {
 				log.Println("ERROR: MainInterfaceHandler has crashed", r)
 			}
 		}()
-		MainInterfaceHandler(roller, s, i)
+		MainInterfaceHandler(c.Roller, s, i)
 	})
 
 	// Open a websocket connection to Discord and begin listening.
@@ -84,12 +78,6 @@ func main() {
 		registeredCommands[i] = cmd
 	}
 
-	// Wait here until CTRL-C or other term signal is received.
-	log.Println("Bot is now running.")
-	sc := make(chan os.Signal, 1)
-	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
-	<-sc
-
-	log.Println("Bot is shutting down.")
+	common.WaitForGracefulShutdown()
 	discord.Close()
 }
