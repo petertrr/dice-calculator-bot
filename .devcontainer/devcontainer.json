@@ -9,7 +9,8 @@
 			"extensions": [
 				"golang.go",
 				"ms-vscode.makefile-tools",
-				"donjayamanne.githistory"
+				"donjayamanne.githistory",
+				"github.vscode-github-actions"
 			]
 		}
 	},

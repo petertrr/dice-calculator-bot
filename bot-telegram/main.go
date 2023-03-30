@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+	"runtime/debug"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/justinian/dice"
@@ -31,6 +32,11 @@ func main() {
 	c := &common.CommonBotContext{}
 	c.Setup()
 
+	tgbotapi.NewSetMyCommands(tgbotapi.BotCommand{
+		Command:     "roll",
+		Description: "Evaluates dice notation, e.g. `2d20+4`.",
+	})
+
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
@@ -54,15 +60,21 @@ func processUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, ctx *common.Com
 			log.Printf("ERROR: error processing update %v\n%v", r, string(debug.Stack()))
 		}
 	}()
-	// processing
-	text := update.Message.Text
-	var result dice.RollResult
-	if text != "" {
-		result, _, _ = ctx.Roller.Roll(text)
+
+	if !update.Message.IsCommand() {
+		// ignore any non-command Messages
+		return
+	} else if update.Message.Command() == "roll" {
+		// processing
+		text := update.Message.CommandArguments()
+		var result dice.RollResult
+		if text != "" {
+			result, _, _ = ctx.Roller.Roll(text)
+		}
+
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "@"+update.SentFrom().UserName+" rolled "+result.String())
+		msg.ReplyToMessageID = update.Message.MessageID
+
+		bot.Send(msg)
 	}
-
-	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "@"+update.SentFrom().UserName+" rolled "+result.String())
-	msg.ReplyToMessageID = update.Message.MessageID
-
-	bot.Send(msg)
 }
