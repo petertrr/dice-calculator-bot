@@ -25,17 +25,23 @@ func init() {
 func main() {
 	bot, err := tgbotapi.NewBotAPI(Token)
 	if err != nil {
-		log.Println("error creating Telegram session,", err)
+		log.Println("error creating Telegram session: ", err)
 		return
 	}
 
 	c := &common.CommonBotContext{}
 	c.Setup()
 
-	tgbotapi.NewSetMyCommands(tgbotapi.BotCommand{
+	commands := tgbotapi.NewSetMyCommands(tgbotapi.BotCommand{
 		Command:     "roll",
 		Description: "Evaluates dice notation, e.g. `2d20+4`.",
 	})
+
+	_, err = bot.Request(commands)
+	if err != nil {
+		log.Println("error registering bot commands: ", err)
+		return
+	}
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
@@ -50,7 +56,10 @@ func main() {
 
 func process(updates tgbotapi.UpdatesChannel, bot *tgbotapi.BotAPI, ctx *common.CommonBotContext) {
 	for update := range updates {
-		processUpdate(update, bot, ctx)
+		if update.Message != nil && update.Message.IsCommand() {
+			// process only Command updates
+			processUpdate(update, bot, ctx)
+		}
 	}
 }
 
@@ -61,10 +70,7 @@ func processUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, ctx *common.Com
 		}
 	}()
 
-	if !update.Message.IsCommand() {
-		// ignore any non-command Messages
-		return
-	} else if update.Message.Command() == "roll" {
+	if update.Message.Command() == "roll" {
 		// processing
 		text := update.Message.CommandArguments()
 		var result dice.RollResult
