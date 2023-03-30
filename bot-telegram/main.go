@@ -51,7 +51,7 @@ func process(updates tgbotapi.UpdatesChannel, bot *tgbotapi.BotAPI, ctx *common.
 func processUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, ctx *common.CommonBotContext) {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Println("ERROR: error processing update", r)
+			log.Printf("ERROR: error processing update %v\n%v", r, string(debug.Stack()))
 		}
 	}()
 	// processing
