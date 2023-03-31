@@ -48,3 +48,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish the image
         run: docker push ghcr.io/${{ github.repository }} --all-tags
+      - name: Publish summary
+        run: |
+          echo Published image $VERSION >> $GITHUB_STEP_SUMMARY
