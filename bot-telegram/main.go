@@ -74,11 +74,17 @@ func processUpdate(update tgbotapi.Update, bot *tgbotapi.BotAPI, ctx *common.Com
 		// processing
 		text := update.Message.CommandArguments()
 		var result dice.RollResult
+		var err error
 		if text != "" {
-			result, _, _ = ctx.Roller.Roll(text)
+			result, _, err = ctx.Roller.Roll(text)
 		}
 
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "@"+update.SentFrom().UserName+" rolled "+result.String())
+		var msg tgbotapi.MessageConfig
+		if result != nil {
+			msg = tgbotapi.NewMessage(update.Message.Chat.ID, "@"+update.SentFrom().UserName+" rolled "+result.String())
+		} else {
+			msg = tgbotapi.NewMessage(update.Message.Chat.ID, "Error executing request: "+err.Error())
+		}
 		msg.ReplyToMessageID = update.Message.MessageID
 
 		bot.Send(msg)
