@@ -7,6 +7,7 @@ prepare:
 
 build : prepare
 	go build -o ${BUILD_DIR}/${BASENAME}-discord ${PWD}/bot-discord
+	go build -o ${BUILD_DIR}/${BASENAME}-telegram ${PWD}/bot-telegram
 
 clean:
 	rm -rf ${BUILD_DIR}/
