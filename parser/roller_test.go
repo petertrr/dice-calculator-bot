@@ -94,17 +94,7 @@ func TestRollsWithParens(t *testing.T) {
 }
 
 func TestKeepModifier(t *testing.T) {
-	numInvocations := 0
-	roller := parser.NewAntrl4BasedRoller(
-		func(x int) int {
-			numInvocations++
-			if numInvocations%2 == 0 {
-				return x / 4
-			} else {
-				return 3 * x / 4
-			}
-		},
-	)
+	roller := newOddEvenRoller()
 	var result dice.RollResult
 
 	result, _, _ = roller.Roll("2d20kh1")
@@ -133,6 +123,16 @@ func TestKeepModifier(t *testing.T) {
 	shouldBeDroppedRolls(result.(dice.StdResult), []int{5}, t)
 }
 
+func TestKeepModifierWithSum(t *testing.T) {
+	roller := newOddEvenRoller()
+	var result dice.RollResult
+
+	result, _, _ = roller.Roll("2d20kh1+2")
+	shouldBeTotal(result, 17, t)
+	shouldBeRolls(result.(dice.StdResult), []int{15, 5}, t)
+	shouldBeDroppedRolls(result.(dice.StdResult), []int{5}, t)
+}
+
 func shouldBeTotal(d dice.RollResult, total int, t *testing.T) {
 	if d.(dice.StdResult).Total != total {
 		t.Helper()
@@ -152,6 +152,20 @@ func shouldBeDroppedRolls(d dice.StdResult, droppedRolls []int, t *testing.T) {
 		t.Helper()
 		t.Error("Expected droppedRolls to be ", droppedRolls, ", but found ", d.Dropped)
 	}
+}
+
+func newOddEvenRoller() parser.Antrl4BasedRoller {
+	numInvocations := 0
+	return parser.NewAntrl4BasedRoller(
+		func(x int) int {
+			numInvocations++
+			if numInvocations%2 == 0 {
+				return x / 4
+			} else {
+				return 3 * x / 4
+			}
+		},
+	)
 }
 
 func arrayEquals(a1 []int, a2 []int) bool {
