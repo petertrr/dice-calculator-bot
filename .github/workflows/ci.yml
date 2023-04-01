@@ -14,6 +14,7 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
-      - run: |
+      - name: Buidl and test
+        run: |
           make prepare
           go test ./...
