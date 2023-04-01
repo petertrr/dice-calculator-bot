@@ -75,8 +75,9 @@ func (l *DiceNotationListenerImpl) ExitAddOp(ctx *parser.AddOpContext) {
 			sign := getSign(ctx.ADDOPERATOR(i))
 			result2 := results[lastIndex-i-1]
 			result = dice.StdResult{
-				Total: result.Total + sign*result2.Total,
-				Rolls: append(result.Rolls, result2.Rolls...),
+				Total:   result.Total + sign*result2.Total,
+				Rolls:   append(result.Rolls, result2.Rolls...),
+				Dropped: append(result.Dropped, result2.Dropped...),
 			}
 		}
 		l.push(result)
@@ -158,8 +159,9 @@ func (l *DiceNotationListenerImpl) ExitNumber(ctx *parser.NumberContext) {
 	sign := getSign(ctx.ADDOPERATOR())
 	delta, _ := strconv.Atoi(ctx.DIGIT().GetText())
 	l.stack.Push(dice.StdResult{
-		Total: sign * delta,
-		Rolls: []int{},
+		Total:   sign * delta,
+		Rolls:   []int{},
+		Dropped: []int{},
 	})
 }
 
