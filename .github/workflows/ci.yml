@@ -14,7 +14,14 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
-      - name: Buidl and test
+      - name: Prepare
         run: |
           make prepare
-          go test ./...
+          go install github.com/jstemmer/go-junit-report@latest
+      - name: Test
+        run: |
+          go test -v 2>&1 ./... | go-junit-report -set-exit-code > report.xml
+      - uses: test-summary/action@v2
+        if: always()
+        with:
+          paths: report.xml
