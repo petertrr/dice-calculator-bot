@@ -77,16 +77,24 @@ func TestRollsWithNumbers(t *testing.T) {
 }
 
 func TestRollsWithParens(t *testing.T) {
-    t.Skip("Parentheses are not working")
-
-	roller := parser.NewAntrl4BasedRoller(
-		func(x int) int { return x/2 + 1 },
-	)
+	roller := newOddEvenRoller()
 	var result dice.RollResult
 
+	result, _, _ = roller.Roll("(d4)")
+	shouldBeTotal(result, 3, t)
+	shouldBeRolls(result.(dice.StdResult), []int{3}, t)
+
+	result, _, _ = roller.Roll("(2)")
+	shouldBeTotal(result, 2, t)
+	shouldBeRolls(result.(dice.StdResult), []int{}, t)
+
+	result, _, _ = roller.Roll("(d4+2)")
+	shouldBeTotal(result, 3, t)
+	shouldBeRolls(result.(dice.StdResult), []int{1}, t)
+
 	result, _, _ = roller.Roll("d4+(d4+2)")
-	shouldBeTotal(result, 8, t)
-	shouldBeRolls(result.(dice.StdResult), []int{3, 3}, t)
+	shouldBeTotal(result, 6, t)
+	shouldBeRolls(result.(dice.StdResult), []int{3, 1}, t)
 
 	result, _, _ = roller.Roll("2*(d4+2)")
 	shouldBeTotal(result, 10, t)
