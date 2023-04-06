@@ -53,7 +53,7 @@ func (l *DiceNotationListenerImpl) ExitNotation(ctx *parser.NotationContext) {
 	if l.stack.Size() == 0 && ctx.GetText() == "" {
 		log.Println("DEBUG: Attempt to get result when stack is empty, expression is [", ctx.GetText(), "]")
 		return
-	} else if l.stack.Size() == 1 {
+	} else if    l.stack.Size() == 1 {
 		l.result = l.pop()
 	} else {
 		log.Println("DEBUG: Doing nothing; there are multiple results on stack: ", l.stack, ", expression is [", ctx.GetText(), "]")
