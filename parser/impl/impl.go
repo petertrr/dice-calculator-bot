@@ -193,7 +193,9 @@ func getMultSides(digits []antlr.TerminalNode) (int, int, error) {
 		sides, err = strconv.Atoi(digits[0].GetText())
 	} else {
 		mult, err = strconv.Atoi(digits[0].GetText())
-		sides, err = strconv.Atoi(digits[1].GetText())
+		if err == nil {
+			sides, err = strconv.Atoi(digits[1].GetText())
+		}
 	}
 	if err != nil {
 		return -1, -1, err
