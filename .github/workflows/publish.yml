@@ -22,10 +22,10 @@ jobs:
           ref: ${{ inputs.ref }}
       - name: Install pack CLI
         run: (curl -sSL "https://github.com/buildpacks/pack/releases/download/v$PACK_VERSION/pack-v$PACK_VERSION-linux.tgz" | sudo tar -C /usr/local/bin/ --no-same-owner -xzv pack)
-      - uses: gittools/actions/gitversion/setup@v0.9.15
+      - uses: gittools/actions/gitversion/setup@v1.1.1
         with:
           versionSpec: 5.x
-      - uses: gittools/actions/gitversion/execute@v0.9.15
+      - uses: gittools/actions/gitversion/execute@v1.1.1
         id: calculate-semver
       - name: Store reckoned version into env
         run: |
