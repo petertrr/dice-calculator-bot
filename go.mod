@@ -2,7 +2,7 @@ module github.com/petertrr/dice-calc-bot
 
 go 1.19
 
-require github.com/bwmarrin/discordgo v0.26.1
+require github.com/bwmarrin/discordgo v0.28.1
 
 require (
 	github.com/antlr/antlr4/runtime/Go/antlr/v4 v4.0.0-20221120182715-47415e33c366
